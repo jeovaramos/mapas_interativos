@@ -1,37 +1,44 @@
-## Welcome to GitHub Pages
+# Interactive maps with folium and geobr packages
 
-You can use the [editor on GitHub](https://github.com/jeovaramos/mapas_interativos/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+## Download dataset
+First of all, get the districts map. When you download it from geobr package, it comes for all over the contry. So you will need to subset it for your interesting region. In this case, I choosed São Paulo city.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+```
+bairros = geobr.read_neighborhood(verbose=True)
+bairros = bairros[bairros['name_muni'] == 'São Paulo']
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+escolas = geobr.read_schools()
+escolas = escolas[escolas['name_muni'] == 'São Paulo']
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+The schools dataset is a real large one. Perhaps it longing a while until the download is done. Then, subset again. Note tha I always take a look in the column's types. I Think it is a good practice. You can antecipate some problems and avoid some unacessary frustration further.
 
-### Jekyll Themes
+## Data preparation
+All right, whith the data in your hands, lets do some stuff first. In the school dataset, the geometry field indicates a Point (yes, with capitalized P). Let's separate it in two columns: longitude and latitude with a simple lambda function.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/jeovaramos/mapas_interativos/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+But if you examine row by row, you may notice that we're not in plenty luck with this dataset. Some geometry Points are empty. And, with a great regret, we'll need to trash those out away. You can take a minute if you need it. I totally got you.
 
-### Support or Contact
+And with the data ready, now let's put our hands on the map. But first, make sure when you plotting it appears right on the center of the screen. For that, take the longitude and latitude medians.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+```
+escolas['lon'] = escolas.geometry.apply(lambda p: p.x)
+escolas['lat'] = escolas.geometry.apply(lambda p: p.y)
+
+escolas = escolas[~escolas['lat'].isnull()]
+
+x = escolas['lon'].median()
+y = escolas['lat'].median()
+```
+
+## The first map
+
+The first map will be a simple one. Just with the district. The steps are:
+
+1. Create your base map setting the center and the default zoom.
+2. Bind the data containded in the Geo Data Frame.
+3. Add it to your base map.
+4. Plot it. :)
+
+For more details about plot, please check the jupyter notebook file.
+Thanks for reading.
+Best regards.
